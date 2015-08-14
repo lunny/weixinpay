@@ -1,11 +1,6 @@
 package weixinpay
 
-type Config struct {
-	AppId         string
-	AppKey        string
-	MchId         string
-	NotifyUrl     string
-	PlaceOrderUrl string
-	QueryOrderUrl string
-	ServerIP string
-}
+var (
+	PlaceOrderUrl = "https://api.mch.weixin.qq.com/pay/unifiedorder"
+	QueryOrderUrl = "https://api.mch.weixin.qq.com/pay/orderquery"
+)

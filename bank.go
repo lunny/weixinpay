@@ -130,3 +130,7 @@ var (
 		"VISA_CREDIT":       {"VISA", "信用卡"},
 	}
 )
+
+func GetBankInfo(id string) CardType {
+	return banks[id]
+}

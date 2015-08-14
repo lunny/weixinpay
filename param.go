@@ -64,6 +64,16 @@ func (p Params) FromQuery(vals url.Values) {
 	}
 }
 
+func (p Params) FromUrl(reqUrl string) error {
+	u, err := url.Parse(reqUrl)
+	if err != nil {
+		return err
+	}
+
+	p.FromQuery(u.Query())
+	return nil
+}
+
 // ToXmlString convert the map[string]string to xml string
 func (p Params) ToXmlString() string {
 	xml := "<xml>"
