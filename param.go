@@ -85,6 +85,20 @@ func (p Params) ToXmlString() string {
 	return xml
 }
 
+// check the sign
+func VerifySign(in interface{}, key, correctSign string) (bool, error) {
+	params, err := ToParams(in)
+	if err != nil {
+		return false, err
+	}
+
+	sign := Sign(params, key)
+	if sign != correctSign {
+		return false, fmt.Errorf("signed error: wanted %s, got %s", correctSign, sign)
+	}
+	return true, nil
+}
+
 // ToParams convert the xml struct to map[string]string
 func ToParams(in interface{}) (Params, error) {
 	out := make(Params, 0)
@@ -103,7 +117,7 @@ func ToParams(in interface{}) (Params, error) {
 	for i := 0; i < v.NumField(); i++ {
 		// gets us a StructField
 		fi := typ.Field(i)
-		if tagv := fi.Tag.Get("xml"); tagv != "" && tagv != "xml" {
+		if tagv := fi.Tag.Get("xml"); tagv != "" && tagv != "xml" && tagv != "sign" {
 			// set key of map to value in struct field
 			out = append(out, Param{tagv, v.Field(i).String()})
 		}

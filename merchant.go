@@ -32,10 +32,11 @@ func (m *Merchant) Sign(params Params) string {
 }
 
 // 统一下单 https://pay.weixin.qq.com/wiki/doc/api/native.php?chapter=9_1
-func (m *Merchant) PlaceOrder(orderId, desc, clientIp, notifyUrl string, amount int64) (*PlaceOrderResponse, error) {
+func (m *Merchant) PlaceOrder(orderId, goodsname, desc, clientIp, notifyUrl string, amount int64) (*PlaceOrderResponse, error) {
 	var params = Params{
 		{"appid", m.AppId},
-		{"body", desc},
+		{"body", goodsname},
+		{"detail", desc},
 		{"mch_id", m.MchId},
 		{"nonce_str", NewNonceString()},
 		{"notify_url", notifyUrl},
@@ -54,13 +55,13 @@ func (m *Merchant) PlaceOrder(orderId, desc, clientIp, notifyUrl string, amount 
 	return ParsePlaceOrderResponse(data)
 }
 
-// 查询订单 https://pay.weixin.qq.com/wiki/doc/api/native.php?chapter=9_2
-func (m *Merchant) QueryOrder(transId string) (*QueryOrderResponse, error) {
+// 根据微信支付订单号查询订单 https://pay.weixin.qq.com/wiki/doc/api/native.php?chapter=9_2
+func (m *Merchant) QueryOrderByTransId(transId string) (*PayResult, error) {
 	var params = Params{
 		{"appid", m.AppId},
 		{"mch_id", m.MchId},
-		{"transaction_id", transId},
 		{"nonce_str", NewNonceString()},
+		{"transaction_id", transId},
 	}
 
 	data, err := doHttpPost(QueryOrderUrl, []byte(m.Sign(params)))
@@ -68,7 +69,24 @@ func (m *Merchant) QueryOrder(transId string) (*QueryOrderResponse, error) {
 		return nil, err
 	}
 
-	return ParseQueryOrderResponse(data)
+	return ParsePayResult(data)
+}
+
+// 根据商户订单号查询订单 https://pay.weixin.qq.com/wiki/doc/api/native.php?chapter=9_2
+func (m *Merchant) QueryOrderByOrderId(orderId string) (*PayResult, error) {
+	var params = Params{
+		{"appid", m.AppId},
+		{"mch_id", m.MchId},
+		{"nonce_str", NewNonceString()},
+		{"out_trade_no", orderId},
+	}
+
+	data, err := doHttpPost(QueryOrderUrl, []byte(m.Sign(params)))
+	if err != nil {
+		return nil, err
+	}
+
+	return ParsePayResult(data)
 }
 
 // 生成二维码链接
