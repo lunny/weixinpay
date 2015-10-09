@@ -35,3 +35,26 @@ func ParsePlaceOrderResponse(data []byte) (*PlaceOrderResponse, error) {
 func (p *PlaceOrderResponse) IsSuccess() bool {
 	return p.ReturnCode == "SUCCESS"
 }
+
+type CloseOrderResponse struct {
+	XMLName     xml.Name `xml:"xml"`
+	ReturnCode  string   `xml:"return_code"`
+	ReturnMsg   string   `xml:"return_msg"`
+	AppId       string   `xml:"appid"`
+	MchId       string   `xml:"mch_id"`
+	NonceStr    string   `xml:"nonce_str"`
+	Sign        string   `xml:"sign"`
+	ResultCode  string   `xml:"result_code"`
+	ErrCode     string   `xml:"err_code"`
+	ErrCodeDesc string   `xml:"err_code_des"`
+}
+
+func ParseCloseOrderResponse(data []byte) (*CloseOrderResponse, error) {
+	var resp CloseOrderResponse
+	err := xml.Unmarshal(data, &resp)
+	if err != nil {
+		return nil, err
+	}
+
+	return &resp, nil
+}

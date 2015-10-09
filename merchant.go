@@ -1,6 +1,7 @@
 package weixinpay
 
 import (
+	"errors"
 	"fmt"
 )
 
@@ -52,7 +53,36 @@ func (m *Merchant) PlaceOrder(orderId, goodsname, desc, clientIp, notifyUrl stri
 		return nil, err
 	}
 
-	return ParsePlaceOrderResponse(data)
+	resp, err := ParsePlaceOrderResponse(data)
+	if err != nil {
+		return nil, err
+	}
+
+	ok, err := Verify(resp, m.AppKey, resp.Sign)
+	if err != nil {
+		return nil, err
+	}
+
+	if !ok {
+		return nil, errors.New("signature error")
+	}
+	return resp, nil
+}
+
+func (m *Merchant) CloseOrder(orderId string) (*CloseOrderResponse, error) {
+	var params = Params{
+		{"appid", m.AppId},
+		{"mch_id", m.MchId},
+		{"out_trade_no", orderId},
+		{"nonce_str", NewNonceString()},
+	}
+
+	data, err := doHttpPost(CloseOrderUrl, []byte(m.Sign(params)))
+	if err != nil {
+		return nil, err
+	}
+	
+	return ParseCloseOrderResponse(data)
 }
 
 // 根据微信支付订单号查询订单 https://pay.weixin.qq.com/wiki/doc/api/native.php?chapter=9_2

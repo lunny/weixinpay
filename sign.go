@@ -29,3 +29,17 @@ func Sign(params Params, key string) string {
 	preSignWithKey := params.ToQueryString() + "&key=" + key
 	return fmt.Sprintf("%X", md5.Sum([]byte(preSignWithKey)))
 }
+
+// check the sign
+func Verify(in interface{}, key, correctSign string) (bool, error) {
+	params, err := ToParams(in)
+	if err != nil {
+		return false, err
+	}
+
+	sign := Sign(params, key)
+	if sign != correctSign {
+		return false, fmt.Errorf("signed error: wanted %s, got %s", correctSign, sign)
+	}
+	return true, nil
+}
