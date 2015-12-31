@@ -12,17 +12,17 @@ type Param struct {
 
 type Params []Param
 
-func(p Params) Len() int {
+func (p Params) Len() int {
 	return len(p)
 }
 
 func stringLess(a, b string) bool {
 	var i int
 	for {
-		if i + 1 > len(a) {
+		if i+1 > len(a) {
 			return true
 		}
-		if i + 1 > len(b) {
+		if i+1 > len(b) {
 			return false
 		}
 
@@ -44,10 +44,12 @@ func (p Params) Swap(i, j int) {
 
 func (p Params) ToQueryString() (res string) {
 	for _, param := range p {
-		res += param.Key + "=" + param.Value + "&"
+		if len(param.Key) > 0 && len(param.Value) > 0 {
+			res += param.Key + "=" + param.Value + "&"
+		}
 	}
 	if len(res) > 0 {
-		res = res[0:len(res)-1]
+		res = res[0 : len(res)-1]
 	}
 	return
 }

@@ -1,8 +1,8 @@
 package weixinpay
 
 import (
-	"fmt"
 	"crypto/md5"
+	"fmt"
 	"sort"
 	"strconv"
 	"time"
@@ -16,7 +16,7 @@ func NewNonceString() string {
 	return fmt.Sprintf("%x", md5.Sum([]byte(nonce)))
 }
 
-// NewTimestampString return
+// NewTimestampString return current timestamp
 func NewTimestampString() string {
 	return fmt.Sprintf("%d", time.Now().Unix()+ChinaTimeZoneOffset)
 }
@@ -30,13 +30,12 @@ func Sign(params Params, key string) string {
 	return fmt.Sprintf("%X", md5.Sum([]byte(preSignWithKey)))
 }
 
-// check the sign
+// Verify check the sign
 func Verify(in interface{}, key, correctSign string) (bool, error) {
 	params, err := ToParams(in)
 	if err != nil {
 		return false, err
 	}
-
 	sign := Sign(params, key)
 	if sign != correctSign {
 		return false, fmt.Errorf("signed error: wanted %s, got %s", correctSign, sign)

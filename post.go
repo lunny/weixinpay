@@ -9,7 +9,7 @@ import (
 
 // doRequest post the order in xml format with a sign
 func doHttpPost(targetUrl string, body []byte) ([]byte, error) {
-	req, err := http.NewRequest("POST", targetUrl, bytes.NewBuffer([]byte(body)))
+	req, err := http.NewRequest("POST", targetUrl, bytes.NewReader(body))
 	if err != nil {
 		return []byte(""), err
 	}

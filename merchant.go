@@ -6,17 +6,17 @@ import (
 )
 
 type Merchant struct {
-    AppId         string // 微信公众账号或开放平台APP的唯一标识
-	AppKey        string // API密钥
+	AppId     string // 微信公众账号或开放平台APP的唯一标识
+	AppKey    string // API密钥
 	AppSecret string // API接口密码
-	MchId         string // 微信支付商户号
+	MchId     string // 微信支付商户号
 }
 
 func NewMerchant(appid, appkey, mchid, appsecret string) *Merchant {
 	return &Merchant{
-		AppId: appid,
-		AppKey: appkey,
-		MchId: mchid,
+		AppId:     appid,
+		AppKey:    appkey,
+		MchId:     mchid,
 		AppSecret: appsecret,
 	}
 }
@@ -81,7 +81,7 @@ func (m *Merchant) CloseOrder(orderId string) (*CloseOrderResponse, error) {
 	if err != nil {
 		return nil, err
 	}
-	
+
 	return ParseCloseOrderResponse(data)
 }
 
