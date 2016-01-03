@@ -5,6 +5,11 @@ import (
 	"fmt"
 )
 
+var (
+	SUCCESS = "SUCCESS"
+	FAIL    = "FAIL"
+)
+
 type Merchant struct {
 	AppId     string // 微信公众账号或开放平台APP的唯一标识
 	AppKey    string // API密钥
@@ -103,7 +108,7 @@ func (m *Merchant) QueryOrderByTransId(transId string) (*PayResult, error) {
 }
 
 // 根据商户订单号查询订单 https://pay.weixin.qq.com/wiki/doc/api/native.php?chapter=9_2
-func (m *Merchant) QueryOrderByOrderId(orderId string) (*PayResult, error) {
+func (m *Merchant) QueryOrderByOrderId(orderId string) ([]byte, *PayResult, error) {
 	var params = Params{
 		{"appid", m.AppId},
 		{"mch_id", m.MchId},
@@ -113,22 +118,45 @@ func (m *Merchant) QueryOrderByOrderId(orderId string) (*PayResult, error) {
 
 	data, err := doHttpPost(QueryOrderUrl, []byte(m.Sign(params)))
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
-	return ParsePayResult(data)
+	res, err := ParsePayResult(data)
+	if err != nil {
+		return nil, nil, err
+	}
+	return data, res, nil
 }
 
 // 生成二维码链接
-func (m *Merchant) GenQRLink(productId string) (string, error) {
-	link := fmt.Sprintf("weixin://wxpay/bizpayurl?appid=%s&mch_id=%s&product_id=%s&time_stamp=%s&nonce_str=%s",
-		m.AppId, m.MchId, productId, NewTimestampString(), NewNonceString())
-
-	var params = make(Params, 0)
-	err := params.FromUrl(link)
-	if err != nil {
-		return "", err
+// weixin：//wxpay/bizpayurl?sign=XXXXX&appid=XXXXX&mch_id=XXXXX&product_id=XXXXXX&time_stamp=XXXXXX&nonce_str=XXXXX
+func (m *Merchant) GenQRLink(productId string) string {
+	var params = Params{
+		{"appid", m.AppId},
+		{"mch_id", m.MchId},
+		{"nonce_str", NewNonceString()},
+		{"product_id", productId},
+		{"time_stamp", NewTimestampString()},
 	}
 
-	return link + "&sign=" + m.Sign(params), nil
+	sign := Sign(params, m.AppKey)
+	params = append(params, Param{"sign", sign})
+	fmt.Println(params)
+	return fmt.Sprintf("weixin://wxpay/bizpayurl?%s", params.ToQueryString())
+}
+
+func (m *Merchant) NewScanResponse(returnCode, returnMsg, prepayId, resultCode, errCodeDes string) *ScanResponse {
+	return &ScanResponse{
+		Params: Params{
+			{"return_code", returnCode},
+			{"return_msg", returnMsg},
+			{"appid", m.AppId},
+			{"mch_id", m.MchId},
+			{"nonce_str", NewNonceString()},
+			{"prepay_id", prepayId},
+			{"result_code", resultCode},
+			{"err_code_des", errCodeDes},
+		},
+		AppKey: m.AppKey,
+	}
 }
