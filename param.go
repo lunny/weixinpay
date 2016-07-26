@@ -54,6 +54,14 @@ func (p Params) ToQueryString() (res string) {
 	return
 }
 
+func (p Params) ToMap() map[string]interface{} {
+	var res = make(map[string]interface{})
+	for _, param := range p {
+		res[param.Key] = param.Value
+	}
+	return res
+}
+
 func (p Params) FromQuery(vals url.Values) {
 	for k, v := range vals {
 		if k == "sign" {

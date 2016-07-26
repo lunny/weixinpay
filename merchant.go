@@ -3,6 +3,8 @@ package weixinpay
 import (
 	"errors"
 	"fmt"
+
+	"github.com/lunny/log"
 )
 
 var (
@@ -37,8 +39,15 @@ func (m *Merchant) Sign(params Params) string {
 	return params.ToXmlString()
 }
 
+var (
+	NATIVE = "NATIVE"
+	JSAPI  = "JSAPI"
+	APP    = "APP"
+	WAP    = "WAP"
+)
+
 // 统一下单 https://pay.weixin.qq.com/wiki/doc/api/native.php?chapter=9_1
-func (m *Merchant) PlaceOrder(orderId, goodsname, desc, clientIp, notifyUrl string, amount int64) (*PlaceOrderResponse, error) {
+func (m *Merchant) PlaceOrder(orderId, goodsname, desc, clientIp, notifyUrl string, amount int64, tradeType string) (*PlaceOrderResponse, error) {
 	var params = Params{
 		{"appid", m.AppId},
 		{"body", goodsname},
@@ -50,26 +59,34 @@ func (m *Merchant) PlaceOrder(orderId, goodsname, desc, clientIp, notifyUrl stri
 		{"product_id", orderId},
 		{"spbill_create_ip", clientIp},
 		{"total_fee", fmt.Sprintf("%d", amount)},
-		{"trade_type", "NATIVE"},
+		{"trade_type", tradeType},
 	}
 
-	data, err := doHttpPost(PlaceOrderUrl, []byte(m.Sign(params)))
+	postData := []byte(m.Sign(params))
+	log.Debug(string(postData))
+	data, err := doHttpPost(PlaceOrderUrl, postData)
 	if err != nil {
 		return nil, err
 	}
+
+	log.Debug(string(data))
 
 	resp, err := ParsePlaceOrderResponse(data)
 	if err != nil {
 		return nil, err
 	}
 
-	ok, err := Verify(resp, m.AppKey, resp.Sign)
-	if err != nil {
-		return nil, err
-	}
+	log.Debug(resp)
 
-	if !ok {
-		return nil, errors.New("signature error")
+	if resp.IsSuccess() {
+		ok, err := Verify(resp, m.AppKey, resp.Sign)
+		if err != nil {
+			return nil, err
+		}
+
+		if !ok {
+			return nil, errors.New("signature error")
+		}
 	}
 	return resp, nil
 }

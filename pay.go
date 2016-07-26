@@ -33,9 +33,9 @@ type PayResult struct {
 	ErrCode        string   `xml:"err_code"`
 	ErrCodeDesc    string   `xml:"err_code_des"`
 	DeviceInfo     string   `xml:"device_info"`
+	TradeType      string   `xml:"trade_type"`
 	OpenId         string   `xml:"open_id"`
 	IsSubscribe    string   `xml:"is_subscribe"`
-	TradeType      string   `xml:"trade_type"`
 	TradeState     string   `xml:"trade_state"`
 	TradeStateDesc string   `xml:"trade_state_desc"`
 	BankType       string   `xml:"bank_type"`
@@ -55,8 +55,15 @@ type PayResult struct {
 	TimeEnd       string `xml:"time_end"` // 支付完成时间 yyyyMMddHHmmss
 }
 
-func (r *PayResult) IsSuccess() bool {
-	return r.ReturnCode == "SUCCESS"
+func (p *PayResult) IsSuccess() bool {
+	return p.ReturnCode == "SUCCESS"
+}
+
+func (p *PayResult) Error() *Error {
+	if !p.IsSuccess() {
+		return GetError(p.ErrCode)
+	}
+	return nil
 }
 
 func ParsePayResult(data []byte) (*PayResult, error) {

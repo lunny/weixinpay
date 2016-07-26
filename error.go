@@ -50,3 +50,40 @@ var (
 	ErrPostDataEmpty      = NewError("POST_DATA_EMPTY", "post数据为空", "post数据不能为空", "请检查post数据是否为空")
 	ErrNotUtf8            = NewError("NOT_UTF8", "编码格式错误", "未使用指定编码格式", "请使用NOT_UTF8编码格式")
 )
+
+// GetError get error according code
+func GetError(code string) *Error {
+	switch code {
+	case ErrNoAuth.code:
+		return ErrNoAuth
+	case ErrNotEnough.code:
+		return ErrNotEnough
+	case ErrOrderPaid.code:
+		return ErrOrderPaid
+	case ErrOrderClosed.code:
+		return ErrOrderClosed
+	case ErrSystemError.code:
+		return ErrSystemError
+	case ErrAppidNotExist.code:
+		return ErrAppidNotExist
+	case ErrMchidNotExist.code:
+		return ErrMchidNotExist
+	case ErrAppidMchidNotMatch.code:
+		return ErrAppidMchidNotMatch
+	case ErrLackParams.code:
+		return ErrLackParams
+	case ErrOutTradeNoUsed.code:
+		return ErrOutTradeNoUsed
+	case ErrSignError.code:
+		return ErrSignError
+	case ErrXmlFormatError.code:
+		return ErrXmlFormatError
+	case ErrRequirePostMethod.code:
+		return ErrRequirePostMethod
+	case ErrPostDataEmpty.code:
+		return ErrPostDataEmpty
+	case ErrNotUtf8.code:
+		return ErrNotUtf8
+	}
+	return &Error{code, code, code, ""}
+}
