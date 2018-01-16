@@ -19,6 +19,7 @@ type PlaceOrderResponse struct {
 	TradeType   string   `xml:"trade_type"`
 	PrepayId    string   `xml:"prepay_id"`
 	CodeUrl     string   `xml:"code_url"`
+	MWebURL     string   `xml:"mweb_url"`
 }
 
 // Parse the reponse message from weixin pay to struct of PlaceOrderResult

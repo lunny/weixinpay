@@ -91,6 +91,52 @@ func (m *Merchant) PlaceOrder(orderId, goodsname, desc, clientIp, notifyUrl stri
 	return resp, nil
 }
 
+// 统一下单 https://pay.weixin.qq.com/wiki/doc/api/native.php?chapter=9_1 JSAPI
+func (m *Merchant) PlaceOrderJSAPI(orderId, goodsname, desc, clientIp, notifyUrl string, amount int64, openID string) (*PlaceOrderResponse, error) {
+	var params = Params{
+		{"appid", m.AppId},
+		{"body", goodsname},
+		{"detail", desc},
+		{"mch_id", m.MchId},
+		{"nonce_str", NewNonceString()},
+		{"notify_url", notifyUrl},
+		{"out_trade_no", orderId},
+		{"product_id", orderId},
+		{"spbill_create_ip", clientIp},
+		{"total_fee", fmt.Sprintf("%d", amount)},
+		{"openid", openID},
+		{"trade_type", "JSAPI"},
+	}
+
+	postData := []byte(m.Sign(params))
+	log.Debug(string(postData))
+	data, err := doHttpPost(PlaceOrderUrl, postData)
+	if err != nil {
+		return nil, err
+	}
+
+	log.Debug(string(data))
+
+	resp, err := ParsePlaceOrderResponse(data)
+	if err != nil {
+		return nil, err
+	}
+
+	log.Debug(resp)
+
+	if resp.IsSuccess() {
+		ok, err := Verify(resp, m.AppKey, resp.Sign)
+		if err != nil {
+			return nil, err
+		}
+
+		if !ok {
+			return nil, errors.New("signature error")
+		}
+	}
+	return resp, nil
+}
+
 func (m *Merchant) CloseOrder(orderId string) (*CloseOrderResponse, error) {
 	var params = Params{
 		{"appid", m.AppId},
